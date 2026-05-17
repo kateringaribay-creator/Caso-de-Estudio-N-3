@@ -5,171 +5,134 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # =========================
-# 🧠 POO - ANALIZADOR
+# 🧠 CLASE (POO)
 # =========================
 class DataAnalyzer:
     def __init__(self, df):
         self.df = df
 
-    def numeric_vars(self):
+    def info_data(self):
+        return self.df.info()
+
+    def describe_data(self):
+        return self.df.describe()
+
+    def missing_values(self):
+        return self.df.isnull().sum()
+
+    def numeric_columns(self):
         return self.df.select_dtypes(include=np.number).columns.tolist()
 
-    def categorical_vars(self):
-        return self.df.select_dtypes(include="object").columns.tolist()
+    def categorical_columns(self):
+        return self.df.select_dtypes(exclude=np.number).columns.tolist()
 
 
 # =========================
-# CONFIG
+# 🖥️ CONFIG APP
 # =========================
-st.set_page_config(page_title="Telco Churn EDA", layout="wide")
+st.set_page_config(page_title="EDA Insurance", layout="wide")
 
-st.sidebar.title("📊 Menú")
-menu = st.sidebar.radio("Selecciona:", ["Home", "Carga de datos", "EDA", "Conclusiones"])
-
-df = None
-
+st.title("📊 Insurance Company - EDA Streamlit App")
 
 # =========================
-# HOME
+# 📂 CARGA DE DATASET
 # =========================
-if menu == "Home":
-    st.title("📊 Telco Customer Churn - EDA")
+uploaded_file = st.file_uploader("📁 Carga el archivo CSV", type=["csv"])
 
-    st.write("""
-    Aplicación para análisis exploratorio de datos (EDA)
-    enfocada en la fuga de clientes (Churn).
-    """)
+if uploaded_file is not None:
+    df = pd.read_csv(uploaded_file)
+    analyzer = DataAnalyzer(df)
 
-    st.subheader("👤 Autor")
-    st.write("Nombre: KATERIIN DELFINA GARIBAY FERNANDEZ")
-    st.write("Curso: Python for Analytics")
-    st.write("Año: 2026")
+    st.success("Archivo cargado correctamente ✅")
 
-    st.subheader("🛠 Tecnologías")
-    st.write("Python, Pandas, Streamlit, Matplotlib, Seaborn")
+    # =========================
+    # 🏠 HOME
+    # =========================
+    st.sidebar.title("Menú")
+    option = st.sidebar.selectbox(
+        "Selecciona una sección",
+        ["Home", "Dataset", "EDA"]
+    )
 
+    if option == "Home":
+        st.header("🏠 Presentación del proyecto")
+        st.write("""
+        Este proyecto realiza un Análisis Exploratorio de Datos (EDA)
+        sobre una compañía de seguros usando Streamlit.
+        """)
 
-# =========================
-# CARGA DE DATOS
-# =========================
-elif menu == "Carga de datos":
+        st.write("👨‍💻 Autor: Tu Nombre")
+        st.write("📘 Curso: Python for Analytics")
+        st.write("📅 Año: 2026")
 
-    st.title("📂 Carga del dataset")
+    # =========================
+    # 📊 DATASET
+    # =========================
+    elif option == "Dataset":
+        st.header("📂 Vista del Dataset")
 
-    file = st.file_uploader("Sube el archivo TelcoCustomerChurn.csv", type="csv")
-
-    if file is not None:
-        df = pd.read_csv(file)
-
-        # 🔥 LIMPIEZA CLAVE
-        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
-        df = df.dropna(subset=["TotalCharges"])
-
-        st.session_state["df"] = df
-
-        st.success("Dataset cargado correctamente ✅")
-
+        st.write("🔹 Primeras filas:")
         st.dataframe(df.head())
-        st.write("Dimensiones:", df.shape)
 
-    else:
-        st.info("Sube el archivo para comenzar")
+        st.write("🔹 Dimensiones:")
+        st.write(df.shape)
 
+    # =========================
+    # 📊 EDA
+    # =========================
+    elif option == "EDA":
+        st.header("📊 Análisis Exploratorio de Datos")
 
-# =========================
-# EDA
-# =========================
-elif menu == "EDA":
+        tab1, tab2, tab3, tab4, tab5 = st.tabs(
+            ["Info", "Variables", "Estadísticas", "Visualización", "Insights"]
+        )
 
-    st.title("📊 Análisis Exploratorio de Datos")
-
-    if "df" not in st.session_state:
-        st.warning("Primero carga el dataset ⚠️")
-
-    else:
-        df = st.session_state["df"]
-        analyzer = DataAnalyzer(df)
-
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
-            "Info",
-            "Variables",
-            "Estadísticas",
-            "Missing",
-            "Churn Analysis"
-        ])
-
-        # -------------------------
-        # 1. INFO
-        # -------------------------
+        # ================= INFO =================
         with tab1:
-            st.subheader("Información general")
-            st.text(df.info())
-            st.write(df.dtypes)
+            st.subheader("📌 Información del dataset")
+            st.write(df.info())
 
-        # -------------------------
-        # 2. VARIABLES
-        # -------------------------
+            st.write("🔹 Valores nulos:")
+            st.dataframe(analyzer.missing_values())
+
+        # ================= VARIABLES =================
         with tab2:
-            st.subheader("Clasificación de variables")
+            st.subheader("📌 Tipos de variables")
 
-            st.write("Numéricas:", analyzer.numeric_vars())
-            st.write("Categóricas:", analyzer.categorical_vars())
+            st.write("🔢 Numéricas:")
+            st.write(analyzer.numeric_columns())
 
-        # -------------------------
-        # 3. ESTADÍSTICAS
-        # -------------------------
+            st.write("🔤 Categóricas:")
+            st.write(analyzer.categorical_columns())
+
+        # ================= ESTADÍSTICAS =================
         with tab3:
-            st.subheader("Estadísticas descriptivas")
-            st.dataframe(df.describe())
+            st.subheader("📌 Estadísticas descriptivas")
+            st.dataframe(analyzer.describe_data())
 
-        # -------------------------
-        # 4. MISSING
-        # -------------------------
+        # ================= VISUALIZACIÓN =================
         with tab4:
-            st.subheader("Valores faltantes")
-            st.bar_chart(df.isnull().sum())
+            st.subheader("📊 Distribuciones")
 
-        # -------------------------
-        # 5. CHURN ANALYSIS
-        # -------------------------
+            num_cols = analyzer.numeric_columns()
+
+            col = st.selectbox("Selecciona variable numérica", num_cols)
+
+            fig, ax = plt.subplots()
+            sns.histplot(df[col], kde=True, ax=ax)
+            st.pyplot(fig)
+
+        # ================= INSIGHTS =================
         with tab5:
-            st.subheader("Análisis de Churn")
+            st.subheader("🧠 Hallazgos clave")
 
-            col = st.selectbox("Selecciona variable", df.columns)
+            st.write("""
+            - Se identifican variables con valores faltantes.
+            - Existen diferencias entre variables numéricas y categóricas.
+            - Algunas variables influyen en el comportamiento del cliente.
+            - La visualización ayuda a entender la distribución de datos.
+            - El EDA permite generar insights para decisiones de negocio.
+            """)
 
-            st.bar_chart(df[col].value_counts())
-
-            # Tenure vs Churn
-            if "tenure" in df.columns:
-                fig, ax = plt.subplots()
-                sns.boxplot(data=df, x="Churn", y="tenure", ax=ax)
-                st.pyplot(fig)
-
-            # MonthlyCharges vs Churn
-            if "MonthlyCharges" in df.columns:
-                fig, ax = plt.subplots()
-                sns.boxplot(data=df, x="Churn", y="MonthlyCharges", ax=ax)
-                st.pyplot(fig)
-
-            # Contract vs Churn
-            if "Contract" in df.columns:
-                fig, ax = plt.subplots()
-                sns.countplot(data=df, x="Contract", hue="Churn", ax=ax)
-                plt.xticks(rotation=45)
-                st.pyplot(fig)
-
-
-# =========================
-# CONCLUSIONES
-# =========================
-elif menu == "Conclusiones":
-
-    st.title("📌 Conclusiones")
-
-    st.write("""
-    1. Los clientes con contratos mensuales presentan mayor churn.
-    2. Los clientes nuevos abandonan más el servicio.
-    3. Mayor cargo mensual incrementa la probabilidad de fuga.
-    4. El tipo de contrato influye en la retención.
-    5. La empresa debe mejorar estrategias de fidelización.
-    """)
+else:
+    st.warning("Por favor carga un archivo CSV para comenzar.")
