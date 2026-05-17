@@ -41,7 +41,7 @@ if menu == "Home":
     """)
 
     st.subheader("👤 Autor")
-    st.write("Nombre: TU NOMBRE")
+    st.write("Nombre: KATERIIN DELFINA GARIBAY FERNANDEZ")
     st.write("Curso: Python for Analytics")
     st.write("Año: 2026")
 
