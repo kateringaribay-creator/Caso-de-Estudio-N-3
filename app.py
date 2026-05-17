@@ -61,7 +61,7 @@ if uploaded_file is not None:
         sobre una compañía de seguros usando Streamlit.
         """)
 
-        st.write("👨‍💻 Autor: Tu Nombre")
+        st.write("👨‍💻 Autor: KATERIN DELFINA GARIBAY FERNANDEZ")
         st.write("📘 Curso: Python for Analytics")
         st.write("📅 Año: 2026")
 
